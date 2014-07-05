@@ -107,4 +107,11 @@ Resource::~Resource()
 {   
 }
 
+Resource Resource::wrapStream(std::istream & source)
+{
+    source.seekg(0,std::ios::end);
+    auto last = source.tellg();
+    return Resource(source,0,last);
+}
+
 }

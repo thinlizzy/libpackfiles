@@ -17,6 +17,10 @@ public:
     Resource & operator=(Resource && other);
     Resource(std::istream & source, std::streampos start, std::streampos size);
     ~Resource();
+    
+    // function used to emulate resources from entire files
+    // it leaves source stream at its end
+    static Resource wrapStream(std::istream & source);
 };
 
 }

@@ -8,12 +8,16 @@
 
 namespace pf {
 
+typedef unsigned short HeaderSize;
+typedef unsigned short Version;
 typedef unsigned short FileIndex;
     
 typedef size_t FilePos;
 typedef char char_type;
 typedef std::basic_string<char_type> Filename;
 typedef std::basic_string<char_type> ExternalFilename;
+
+constexpr Version currentVersion = 1;
 
 constexpr char_type separator = '/';
 constexpr size_t MaxInternalName = 200;

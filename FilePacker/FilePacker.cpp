@@ -187,7 +187,15 @@ int main(int argc, char ** argv)
         offset = 0;
     }
     
-    // placeholder for total
+    // placeholders
+    // header size
+    pf::HeaderSize headerSize = 
+            sizeof(pf::HeaderSize) + sizeof(pf::currentVersion)
+            + sizeof(pf::FileIndex);
+    write(file,headerSize);
+    // version
+    write(file,pf::currentVersion);
+    // total
     pf::FileIndex total = 0;
     write(file,total);
         
@@ -203,7 +211,7 @@ int main(int argc, char ** argv)
     writeData(path,fileList);    
     
     // write total 
-    file.seekg(offset);
+    file.seekg(offset + sizeof(pf::HeaderSize) + sizeof(pf::currentVersion));
     write(file,total);  
     
     // write offset

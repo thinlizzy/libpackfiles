@@ -36,19 +36,24 @@ Files::Files():
 {}
 
 Files::Files(ExternalFilename name):
-    bigFile(new std::fstream(name,std::ios::in|std::ios::binary))
+    bigFile(new std::fstream(name,std::ios::in|std::ios::binary)),
+    numFiles(0)
 {
     auto & is = *bigFile;
-    if( is ) {
-        is.seekg(-std::ifstream::off_type(sizeof(FilePos)),std::ios::end);
-        auto posInFile = read<FilePos>(is);
-        is.seekg(posInFile,std::ios::beg);
+    if( ! is ) return;
+        
+    is.seekg(-std::ifstream::off_type(sizeof(FilePos)),std::ios::end);
+    auto posInFile = read<FilePos>(is);
+    is.seekg(posInFile,std::ios::beg);
 
-        numFiles = read<FileIndex>(is);
-        start = is.tellg();
-    } else {
-        numFiles = 0;
-    }
+    // files start right after the header
+    start = is.tellg();
+    start += read<HeaderSize>(is);
+
+    // TODO do logic based on version number
+    auto version = read<Version>(is);
+
+    numFiles = read<FileIndex>(is);
 }
 
 Resource Files::find(Filename name)

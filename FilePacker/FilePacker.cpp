@@ -63,7 +63,7 @@ void write(ostream & os, T value)
 
 fstream file;
 struct FileSpec {
-    die::NativeString filename;
+    fs::Filename filename;
     size_t filesize;
 };
 typedef vector<FileSpec> FileList;
@@ -91,7 +91,7 @@ void doGetFileList(fs::Path path, vector<string> const & extensions, fs::Path ba
 FileList getFileList(fs::Path path, vector<string> const & extensions)
 {
     FileList result;
-    doGetFileList(path,extensions,""_dies,result);
+    doGetFileList(path,extensions,fs::Path(),result);
     sortFileList(result);
     return result;
 }
@@ -111,7 +111,7 @@ void doRecursiveFileList(fs::Path path, vector<string> const & extensions, fs::P
 FileList recursiveFileList(fs::Path path, vector<string> const & extensions)
 {
     FileList result;
-    doRecursiveFileList(path,extensions,""_dies,result);
+    doRecursiveFileList(path,extensions,fs::Path(),result);
     sortFileList(result);
     return result;
 }
@@ -121,11 +121,11 @@ void writeEntries(FileList const & fileList)
     pf::FilePos pos = 0;
     
     for( auto const & f : fileList ) {
-        wcout << 
-                " filename " << f.filename <<
-                " filesize " << f.filesize <<
-                " pos " << pos <<
-                endl;
+        cout <<
+			" filename " << f.filename <<
+			" filesize " << f.filesize <<
+			" pos " << pos <<
+			endl;
         
         auto filename = f.filename.toUTF8();
         if( filename.size() > pf::MaxInternalName ) {
@@ -145,7 +145,7 @@ void writeEntries(FileList const & fileList)
 void writeData(fs::Path path, FileList const & fileList)
 {
     for( auto const & f : fileList ) {
-        auto filename = path.append(f.filename).getPath();
+        auto filename = path.append(f.filename).asFilename();
         fs::FileStreamWrapper source(filename,ios_base::in|ios::binary);
         char buffer[BUFSIZ];
         for(;;) {

@@ -25,7 +25,7 @@ constexpr size_t MaxInternalName = 200;
 typedef std::array<char_type,MaxInternalName> InternalName;
 
 struct BStr {
-    unsigned short size;
+	std::uint16_t size;
     InternalName name;
 };
 

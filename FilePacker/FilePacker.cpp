@@ -211,7 +211,7 @@ int main(int argc, char ** argv)
     writeData(path,fileList);    
     
     // write total 
-    file.seekg(offset + sizeof(pf::HeaderSize) + sizeof(pf::currentVersion));
+    file.seekg(offset + fstream::pos_type(sizeof(pf::HeaderSize)) + fstream::pos_type(sizeof(pf::currentVersion)));
     write(file,total);  
     
     // write offset

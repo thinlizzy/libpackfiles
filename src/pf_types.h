@@ -5,14 +5,15 @@
 
 #include <string>
 #include <array>
+#include <cstdint>
 
 namespace pf {
 
-typedef unsigned short HeaderSize;
-typedef unsigned short Version;
-typedef unsigned short FileIndex;
+using HeaderSize = std::uint16_t;
+using Version = std::uint16_t;
+using FileIndex = std::uint16_t;
+using FilePos = std::uint64_t;
     
-typedef size_t FilePos;
 typedef char char_type;
 typedef std::basic_string<char_type> Filename;
 typedef std::basic_string<char_type> ExternalFilename;
@@ -37,4 +38,3 @@ struct FileEntry {
 }
 
 #endif	/* PF_TYPES_H */
-

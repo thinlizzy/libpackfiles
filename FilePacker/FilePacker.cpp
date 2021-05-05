@@ -131,7 +131,13 @@ void writeEntries(std::filesystem::path path, FileList const & fileList)
         copy(filename.begin(),filename.end(),begin(entry.filename.name));
         entry.pos = pos;
         entry.size = f.filesize;
-        write(file,entry);
+
+        // we write each separate field to avoid alignment shenanigans
+        write(file,entry.filename.size);
+        write(file,entry.filename.name);
+        write(file,entry.pos);
+        write(file,entry.size);
+
         pos += entry.size;
     }
 }

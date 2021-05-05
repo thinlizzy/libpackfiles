@@ -73,7 +73,14 @@ Resource Files::doFind(Filename name, FileIndex first, FileIndex last)
     
     auto elem = (first+last) / 2;
     bigFile->seekg(elemPos(elem));
-    auto entry = read<FileEntry>(*bigFile);
+
+    // we read each separate field to avoid alignment shenanigans
+    FileEntry entry;
+    entry.filename.size = read<NameSize>(*bigFile);
+    entry.filename.name = read<InternalName>(*bigFile);
+    entry.pos = read<FilePos>(*bigFile);
+    entry.size = read<FilePos>(*bigFile);
+
     auto cmp = compare(name,entry.filename);
     if( cmp == 0 ) return Resource(*bigFile,entry.pos + elemPos(numFiles),entry.size);
     
@@ -82,7 +89,7 @@ Resource Files::doFind(Filename name, FileIndex first, FileIndex last)
 
 std::streampos Files::elemPos(size_t elem) const
 {
-    return start + std::streampos(elem * sizeof(FileEntry));
+    return start + std::streampos(elem * pf::fileEntrySize);
 }
 
 }

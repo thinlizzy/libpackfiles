@@ -9,11 +9,11 @@ namespace pf {
 class ResourceBuf;
 
 class Resource: public std::istream {
-    // TODO remove unique_ptr once they decide to implement movable streams
+    // TODO remove unique_ptr after figuring out how to make ResourceBuf to move properly
     std::unique_ptr<ResourceBuf> streambuf;
 public:
     Resource();
-    Resource(Resource && other); // can't be default because streams can't move :(
+    Resource(Resource && other);
     Resource & operator=(Resource && other);
     Resource(std::istream & source, std::streampos start, std::streampos size);
     ~Resource();

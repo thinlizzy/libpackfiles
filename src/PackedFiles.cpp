@@ -36,24 +36,23 @@ Files::Files():
 {}
 
 Files::Files(ExternalFilename name):
-    bigFile(new std::fstream(name,std::ios::in|std::ios::binary)),
+    bigFile(name,std::ios::in|std::ios::binary),
     numFiles(0)
 {
-    auto & is = *bigFile;
-    if( ! is ) return;
+    if( ! bigFile ) return;
         
-    is.seekg(-std::ifstream::off_type(sizeof(FilePos)),std::ios::end);
-    auto posInFile = read<FilePos>(is);
-    is.seekg(posInFile,std::ios::beg);
+    bigFile.seekg(-std::ifstream::off_type(sizeof(FilePos)),std::ios::end);
+    auto posInFile = read<FilePos>(bigFile);
+    bigFile.seekg(posInFile,std::ios::beg);
 
     // files start right after the header
-    start = is.tellg();
-    start += read<HeaderSize>(is);
+    start = bigFile.tellg();
+    start += read<HeaderSize>(bigFile);
 
     // TODO do logic based on version number
-    auto version = read<Version>(is);
+    auto version = read<Version>(bigFile);
 
-    numFiles = read<FileIndex>(is);
+    numFiles = read<FileIndex>(bigFile);
 }
 
 Resource Files::find(Filename name)
@@ -72,17 +71,17 @@ Resource Files::doFind(Filename name, FileIndex first, FileIndex last)
     if( first >= last ) return Resource();
     
     auto elem = (first+last) / 2;
-    bigFile->seekg(elemPos(elem));
+    bigFile.seekg(elemPos(elem));
 
     // we read each separate field to avoid alignment shenanigans
     FileEntry entry;
-    entry.filename.size = read<NameSize>(*bigFile);
-    entry.filename.name = read<InternalName>(*bigFile);
-    entry.pos = read<FilePos>(*bigFile);
-    entry.size = read<FilePos>(*bigFile);
+    entry.filename.size = read<NameSize>(bigFile);
+    entry.filename.name = read<InternalName>(bigFile);
+    entry.pos = read<FilePos>(bigFile);
+    entry.size = read<FilePos>(bigFile);
 
     auto cmp = compare(name,entry.filename);
-    if( cmp == 0 ) return Resource(*bigFile,entry.pos + elemPos(numFiles),entry.size);
+    if( cmp == 0 ) return Resource(bigFile,entry.pos + elemPos(numFiles),entry.size);
     
     return cmp < 0 ? doFind(name,first,elem) : doFind(name,elem+1,last);
 }

@@ -4,7 +4,6 @@
 #include "pf_types.h"
 #include "Resource.h"
 #include <fstream>
-#include <memory>
 
 namespace pf {
 
@@ -25,8 +24,7 @@ public:
     // TODO add iteration? key filtering?
     FileIndex count() const;
 private:
-    // TODO remove unique_ptr once they decide to implement movable streams
-    std::unique_ptr<std::fstream> bigFile;
+    std::fstream bigFile;
     size_t numFiles;
     std::streampos start;
     

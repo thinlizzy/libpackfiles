@@ -1,12 +1,13 @@
-#include "../src/pf_types.h"
-#include <fileutils.h>
-#include <string>
-#include <unordered_set>
+#include <algorithm>
+#include <cstdlib>
 #include <iostream>
+#include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <vector>
-#include <algorithm>
+#include <unordered_set>
+#include "src/pf_types.h"
 
 using namespace std;
 
@@ -44,13 +45,15 @@ public:
     }
 };
 
-vector<string> split(string const & str, char delim)
+using Extensions = unordered_set<std::string>;
+
+Extensions getExtensions(string const & str, char delim)
 {
-    vector<string> result;
+    Extensions result;
     istringstream iss(str);
     string elem;
     while( getline(iss,elem,delim) ) {
-        result.push_back(elem);
+        result.insert("." + elem);
     }
     return result;
 }
@@ -63,7 +66,7 @@ void write(ostream & os, T value)
 
 fstream file;
 struct FileSpec {
-    fs::Filename filename;
+    std::filesystem::path filename;
     size_t filesize;
 };
 typedef vector<FileSpec> FileList;
@@ -75,43 +78,32 @@ void sortFileList(FileList & fileList)
     });
 }
 
-void doGetFileList(fs::Path path, vector<string> const & extensions, fs::Path base, FileList & fileList)
+void getFile(std::filesystem::directory_entry const & entry, Extensions const & extensions, FileList & fileList)
 {
-    for( auto ext : extensions ) {
-        auto pathMask = path.append("*."+ext);
-        for( fs::GlobIterator it(pathMask); it.getStatus() == fs::ok; ++it ) {
-            fileList.push_back({
-                fs::Path::changeSeparator(base.append(it->filename()),pf::separator),
-                it->filesize()
-            });
-        }
-    }    
+    if( entry.is_regular_file() && (extensions.empty() || extensions.count(entry.path().extension().string())) ) {
+        fileList.push_back({
+            entry.path(),
+            entry.file_size()
+        });
+    }
 }
 
-FileList getFileList(fs::Path path, vector<string> const & extensions)
+FileList getFileList(std::filesystem::path path, Extensions const & extensions)
 {
     FileList result;
-    doGetFileList(path,extensions,fs::Path(),result);
+    for( auto & entry : std::filesystem::directory_iterator(path) ) {
+        getFile(entry,extensions,result);
+    }
     sortFileList(result);
     return result;
 }
 
-void doRecursiveFileList(fs::Path path, vector<string> const & extensions, fs::Path base, FileList & fileList)
-{
-    auto basePath = path.append(base);
-    doGetFileList(basePath,extensions,base,fileList);
-    // recurse subdirs
-    for( auto it = fs::GlobIterator(basePath.append("*.*")); it.getStatus() == fs::ok; ++it ) {
-        if( it->isDirectory() && ! it->isSpecialDirectory() ) {
-            doRecursiveFileList(path,extensions,base.append(it->filename()),fileList);
-        }
-    }
-}
-
-FileList recursiveFileList(fs::Path path, vector<string> const & extensions)
+FileList recursiveFileList(std::filesystem::path path, Extensions const & extensions)
 {
     FileList result;
-    doRecursiveFileList(path,extensions,fs::Path(),result);
+    for( auto & entry : std::filesystem::recursive_directory_iterator(path) ) {
+        getFile(entry,extensions,result);
+    }
     sortFileList(result);
     return result;
 }
@@ -127,7 +119,7 @@ void writeEntries(FileList const & fileList)
 			" pos " << pos <<
 			endl;
         
-        auto filename = f.filename.toUTF8();
+        auto filename = f.filename.string();
         if( filename.size() > pf::MaxInternalName ) {
             filename.resize(pf::MaxInternalName);
         }
@@ -142,11 +134,12 @@ void writeEntries(FileList const & fileList)
     }
 }
 
-void writeData(fs::Path path, FileList const & fileList)
+void writeData(std::filesystem::path path, FileList const & fileList)
 {
     for( auto const & f : fileList ) {
-        auto filename = path.append(f.filename).asFilename();
-        fs::FileStreamWrapper source(filename,ios_base::in|ios::binary);
+        auto filename = path;
+        filename += f.filename;
+        std::ifstream source(filename,ios_base::in|ios::binary);
         char buffer[BUFSIZ];
         for(;;) {
             source.read(buffer,BUFSIZ);
@@ -164,7 +157,7 @@ int main(int argc, char ** argv)
     
     string filename = parser.argument(1);
     string baseDir = parser.argument(2,"");
-    string extensionsS = parser.argument(3,"*");
+    string extensionsS = parser.argument(3,"");
     auto options = parser.optionsFrom(4);
     
     fstream::pos_type offset;
@@ -200,8 +193,8 @@ int main(int argc, char ** argv)
     write(file,total);
         
     // write tables and files
-    auto path = fs::Path(baseDir);
-    auto extensions = split(extensionsS,',');
+    auto path = std::filesystem::path(baseDir);
+    auto extensions = getExtensions(extensionsS,',');
     
     FileList fileList = options.count("recursive") ? 
         recursiveFileList(path,extensions) :
@@ -220,4 +213,3 @@ int main(int argc, char ** argv)
 
     return 0;
 }
-

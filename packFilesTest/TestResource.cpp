@@ -1,8 +1,9 @@
 #include <tut.h>
 #include <fstream>
 #include <string>
+#include "src/Resource.h"
 
-#include "../src/Resource.h"
+#include "test_data_deps.inc"
 
 using namespace std;
 using namespace pf;
@@ -12,7 +13,10 @@ namespace {
         fstream mainStream;
 		setup()
 		{
-            mainStream.open("packFilesTest.cpp");
+            mainStream.open(testDir + "packFilesTest.cpp");
+            if( ! mainStream ) {
+                throw "can't open file";
+            }
 		}
     };
 }
@@ -138,7 +142,7 @@ namespace tut {
 
         Resource res(mainStream,9,37);
         res.seekg(8);
-        ensure("seekg failed",res);
+        ensure("seekg failed",bool(res));
         string test;
         getline(res,test,' ');
         ensure_equals(test,"#include");
@@ -155,7 +159,7 @@ namespace tut {
         getline(res,test);
         ensure_equals(test,"<tut.h>");
         res.seekg(-7,ios::cur);
-        ensure("seekg failed",res);
+        ensure("seekg failed",bool(res));
         getline(res,test,'.');
         ensure_equals(test,"tut");
         res.seekg(3,ios::cur);
@@ -174,10 +178,8 @@ namespace tut {
         getline(res,test);
         ensure_equals(test,"<tut.h>");
         res.seekg(-7,ios::end);
-        ensure("seekg failed",res);
+        ensure("seekg failed",bool(res));
         getline(res,test);
         ensure_equals(test,".h>");
     }
-
 }
-

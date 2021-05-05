@@ -1,11 +1,11 @@
-#include "../src/PackedFiles.h"
 #include <tut.h>
 #include <string>
 #include <fstream>
 #include <algorithm>
 #include <vector>
+#include "src/PackedFiles.h"
 
-#define BASETEST "testData/"
+#include "test_data_deps.inc"
 
 using namespace std;
 using namespace pf;
@@ -15,7 +15,7 @@ namespace {
         Files files;
 		setup()
 		{
-            files = loadFromFile(BASETEST "test2.dat");
+            files = loadFromFile(testDataDir + "test2.dat");
 		}
     };
 }
@@ -42,7 +42,7 @@ namespace tut {
         set_test_name("file2.txt integrity");
         
         auto res2 = files.find("file2.txt");
-        ensure("file2.txt",res2);
+        ensure("file2.txt",!res2.fail());
         res2.seekg(0,ios::end);
         ensure_equals(res2.tellg(),5);
         
@@ -50,7 +50,7 @@ namespace tut {
         char buf1[5];
         res2.read(buf1,5);
         
-        fstream file2(BASETEST "file2.txt",ios::in|ios::binary);
+        fstream file2(testDataDir + "file2.txt",ios::in|ios::binary);
         char buf2[5];
         file2.read(buf2,5);
         
@@ -76,13 +76,13 @@ namespace tut {
         set_test_name("enable.ogg integrity");
         
         auto res = files.find("enable.ogg");
-        ensure("enable.ogg",res);
+        ensure("enable.ogg",!res.fail());
         res.seekg(0,ios::end);
         auto size = res.tellg();
         ensure(size > 0);
         
         res.seekg(0);
-        fstream file(BASETEST "enable.ogg",ios::in|ios::binary);
+        fstream file(testDataDir + "enable.ogg",ios::in|ios::binary);
         
         auto buf1 = readStream(res,size);
         auto buf2 = readStream(file,size);

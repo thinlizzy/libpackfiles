@@ -1,3 +1,3 @@
-..\FilePacker\dist\Debug\MinGW_W64-Windows\filepacker.exe testData\test.dat testData txt
-..\FilePacker\dist\Debug\MinGW_W64-Windows\filepacker.exe testData\test2.dat testData txt,ogg
-..\FilePacker\dist\Debug\MinGW_W64-Windows\filepacker.exe testData\test3.dat testData txt recursive
+bazel run FilePacker $(PWD)/packFilesTest/testData/test.dat $(PWD)/packFilesTest/testData txt
+bazel run FilePacker $(PWD)/packFilesTest/testData/test2.dat $(PWD)/packFilesTest/testData txt,ogg
+bazel run FilePacker $(PWD)/packFilesTest/testData/test3.dat $(PWD)/packFilesTest/testData txt recursive

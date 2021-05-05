@@ -1,8 +1,8 @@
-#include "../src/PackedFiles.h"
 #include <tut.h>
 #include <string>
+#include "src/PackedFiles.h"
 
-#define BASETEST "testData/"
+#include "test_data_deps.inc"
 
 using namespace std;
 using namespace pf;
@@ -11,7 +11,7 @@ namespace {
     struct setup {
         Files textFiles;
 		setup():
-            textFiles(BASETEST "test.dat")
+            textFiles(testDataDir + "test.dat")
 		{
 		}
     };
@@ -39,15 +39,15 @@ namespace tut {
         set_test_name("loadFromFile find");
         
         auto res1 = textFiles.find("file1.txt");
-        ensure("1",res1);
+        ensure("1",!res1.fail());
         auto res2 = textFiles.find("file2.txt");
-        ensure("2",res2);
+        ensure("2",!res2.fail());
         auto res3 = textFiles.find("file3.txt");
-        ensure("3",res3);
+        ensure("3",!res3.fail());
         auto res4 = textFiles.find("file22.txt");
-        ensure_not("4",res4);
+        ensure_not("4",!res4.fail());
         auto res5 = textFiles.find("file0.txt");
-        ensure_not("5",res5);
+        ensure_not("5",!res5.fail());
     }
 
     template<> 
@@ -59,7 +59,7 @@ namespace tut {
         string test;
         auto res = textFiles.find("file1.txt");
         getline(res,test);
-        ensure("ok",res);
+        ensure("ok",!res.fail());
         ensure_equals(test,"LINE1");
         getline(res,test);
         ensure_equals(test,"=====");
@@ -74,7 +74,7 @@ namespace tut {
         string test;
         auto res = textFiles.find("file2.txt");
         getline(res,test);
-        ensure("ok",res);
+        ensure("ok",!res.fail());
         ensure_equals(test,"LINE1");
         getline(res,test);
         ensure("fail",res.fail());
@@ -89,7 +89,7 @@ namespace tut {
         string test;
         auto res = textFiles.find("file2.txt");
         getline(res,test);
-        ensure("ok",res);
+        ensure("ok",!res.fail());
         ensure_equals(test,"LINE1");
         getline(res,test);
         ensure("fail",res.fail());

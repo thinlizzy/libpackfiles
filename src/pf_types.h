@@ -21,7 +21,7 @@ typedef std::basic_string<char_type> ExternalFilename;
 constexpr Version currentVersion = 1;
 
 constexpr char_type separator = '/';
-constexpr size_t MaxInternalName = 200;
+constexpr size_t MaxInternalName = 256;
 typedef std::array<char_type,MaxInternalName> InternalName;
 
 struct BStr {

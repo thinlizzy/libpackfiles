@@ -66,7 +66,7 @@ FileIndex Files::count() const
     return numFiles;
 }
 
-// TODO binary_search could be used if we supported iterators :>
+// TODO std::binary_search could be used if we supported iterators :>
 Resource Files::doFind(Filename name, FileIndex first, FileIndex last)
 {
     if( first >= last ) return Resource();

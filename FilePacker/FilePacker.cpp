@@ -108,7 +108,7 @@ FileList recursiveFileList(std::filesystem::path path, Extensions const & extens
     return result;
 }
 
-void writeEntries(FileList const & fileList)
+void writeEntries(std::filesystem::path path, FileList const & fileList)
 {
     pf::FilePos pos = 0;
     
@@ -118,14 +118,16 @@ void writeEntries(FileList const & fileList)
 			" filesize " << f.filesize <<
 			" pos " << pos <<
 			endl;
-        
-        auto filename = f.filename.string();
+
+        auto filename = f.filename.lexically_relative(path).string();
+        replace(filename.begin(),filename.end(),'\\',pf::separator); // replace win32 path separators if any
         if( filename.size() > pf::MaxInternalName ) {
             filename.resize(pf::MaxInternalName);
         }
         
         pf::FileEntry entry;
         entry.filename.size = filename.size();
+        entry.filename.name.fill(255);
         copy(filename.begin(),filename.end(),begin(entry.filename.name));
         entry.pos = pos;
         entry.size = f.filesize;
@@ -134,12 +136,14 @@ void writeEntries(FileList const & fileList)
     }
 }
 
-void writeData(std::filesystem::path path, FileList const & fileList)
+void writeData(FileList const & fileList)
 {
     for( auto const & f : fileList ) {
-        auto filename = path;
-        filename += f.filename;
-        std::ifstream source(filename,ios_base::in|ios::binary);
+        ifstream source(f.filename,ios_base::in | ios::binary);
+        if( ! source ) {
+            cerr << "Could not open " << f.filename << " for reading\n";
+            exit(1);
+        }
         char buffer[BUFSIZ];
         for(;;) {
             source.read(buffer,BUFSIZ);
@@ -164,7 +168,7 @@ int main(int argc, char ** argv)
     if( options.count("append") ) {
         file.open(filename,ios_base::in | ios_base::out | ios_base::binary);
         if( ! file ) {
-            cout << "could not open the file for appending" << endl;
+            cerr << "could not open " << filename << " for appending" << endl;
             exit(2);            
         }
         
@@ -173,7 +177,7 @@ int main(int argc, char ** argv)
     } else {
         file.open(filename,ios_base::trunc | ios_base::out | ios_base::binary);        
         if( ! file ) {
-            cout << "could not open the file for writing" << endl;
+            cerr << "could not open " << filename << " for writing" << endl;
             exit(2);            
         }
         
@@ -200,8 +204,8 @@ int main(int argc, char ** argv)
         recursiveFileList(path,extensions) :
         getFileList(path,extensions);
     total = fileList.size();
-    writeEntries(fileList);
-    writeData(path,fileList);    
+    writeEntries(path,fileList);
+    writeData(fileList);    
     
     // write total 
     file.seekg(offset + fstream::pos_type(sizeof(pf::HeaderSize)) + fstream::pos_type(sizeof(pf::currentVersion)));

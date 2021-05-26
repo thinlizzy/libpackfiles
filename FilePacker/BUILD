@@ -6,5 +6,4 @@ cc_binary(
 	deps = [
 		"//src:pf_types",
 	],
-	copts = ["-std:c++17"],
 )

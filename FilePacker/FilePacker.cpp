@@ -318,6 +318,9 @@ int main(int argc, char ** argv)
         writeData(fileList);
         writeTotalAndOffset(fileList.size(),offset);
     }
+	
+	file.close();
+	std::cout << "Wrote on " << std::filesystem::canonical(filename) << std::endl;
 
     return 0;
 }
